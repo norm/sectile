@@ -47,5 +47,8 @@ class Sectile(object):
             self.fragments_directory,
             file
         )
-        with open(found_file) as ff:
-            return ff.read()
+        try:
+            with open(found_file) as ff:
+                return ff.read()
+        except FileNotFoundError:
+            return '' 

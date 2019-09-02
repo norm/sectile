@@ -29,3 +29,8 @@ def test_expand_expands():
         sectile.expand('\n<% sectile insert something %>\n')
         == '\nFOUND SOMETHING\n'
     )
+
+    assert (
+        sectile.expand('\n<% sectile insert nothing %>\n')
+        == '\n\n'
+    )
