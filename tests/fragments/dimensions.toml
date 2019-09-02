@@ -1,0 +1,46 @@
+# FILE FORMAT
+# 
+# 1.    comments are anything beginning with a hash
+# 2.    blank lines are ignored
+# 3.    white space around the equals is ignored 
+# 4.    all dimensions and elements are [a-zA-Z0-9\.-] only, case sensitive
+
+dimensions = [
+    'region',
+    'language',
+    'property',
+    'partner',
+    'version',
+    'bucket',
+    'environment',
+]
+
+
+
+
+# two things to note:
+#   1.  'all' never has to be declared, it is provided for you
+#   2.  order is unimportant, so 'uk' can be declared before 'en' has been
+[region]
+uk = "en"         # 'uk' inherits from 'en'
+en = "all"        # 'en' inherits from 'all'
+
+[language]
+en-GB = "en"
+en    = "all"
+
+[property]
+media  = "all"
+movies = "media"
+
+[partner]
+# empty dimensions are allowed
+
+[version]
+
+[bucket]
+125 = "all"
+
+[environment]
+live = "all"
+dev  = "all"
