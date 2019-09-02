@@ -8,9 +8,18 @@ def test_expand_raises_error_without_arguments():
         sectile = Sectile()
         sectile.expand()
 
+def test_expand_raises_error_on_nonstring():
+    with pytest.raises(TypeError):
+        sectile = Sectile()
+        sectile.expand(1234)
+
 def test_expand_returns_strings_unchanged():
     sectile = Sectile()
     assert sectile.expand('') == ''
     assert sectile.expand('a string') == 'a string'
     assert sectile.expand('\nhello\n') == '\nhello\n'
-    assert sectile.expand(1234) == 1234
+    assert sectile.expand('1234') == '1234'
+
+def test_expand_expands():
+    sectile = Sectile()
+    assert sectile.expand('\n[[ sectile insert me ]]\n') == '\nINSERTED TEXT\n'
