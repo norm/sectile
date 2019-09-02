@@ -1,3 +1,4 @@
+import os
 import re
 
 
@@ -16,11 +17,10 @@ SECTILE_COMMAND = r"""
     $
 """
 
-INSERT = 'INSERTED TEXT'
-
 
 class Sectile(object):
-    def __init__(self):
+    def __init__(self, directory):
+        self.fragments_directory = directory
         self.matcher = re.compile(
             SECTILE_COMMAND,
             re.MULTILINE|re.DOTALL|re.VERBOSE
@@ -32,6 +32,19 @@ class Sectile(object):
 
         if matches is not None:
             if matches.group('insert'):
-                expanded = matches.group('before') + INSERT + matches.group('after')
+                insert = self.get_file(matches.group('insert'))
+                expanded = (
+                    matches.group('before')
+                    + insert
+                    + matches.group('after')
+                )
 
         return expanded
+
+    def get_file(self, file):
+        found_file = os.path.join(
+            self.fragments_directory,
+            file
+        )
+        with open(found_file) as ff:
+            return ff.read()
