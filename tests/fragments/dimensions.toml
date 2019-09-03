@@ -1,0 +1,21 @@
+# File format: TOML [insert URL]
+
+dimensions = [
+    'region',
+    'language',
+    'environment',
+]
+
+# three things to note:
+#   1.  'all' never has to be declared, it is provided for you
+#   2.  ordering of {instances} within a dimension is not important
+#   3.  a dimension does not need to contain any {instances}, or every
+#       {instance} you are going to use
+
+[region]
+uk      = "europe"
+england = "uk"
+
+[environment]
+qa      = "staging"
+staging = "production"
