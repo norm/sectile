@@ -17,10 +17,10 @@ def test_expand_raises_error_on_nonstring():
 
 def test_expand_returns_strings_unchanged():
     sectile = Sectile('tests/fragments')
-    assert sectile.expand('') == ''
-    assert sectile.expand('a string') == 'a string'
-    assert sectile.expand('\nhello\n') == '\nhello\n'
-    assert sectile.expand('1234') == '1234'
+    assert sectile.expand('', '') == ''
+    assert sectile.expand('a string', '') == 'a string'
+    assert sectile.expand('\nhello\n', '') == '\nhello\n'
+    assert sectile.expand('1234', '') == '1234'
 
 
 def test_expand_expands():

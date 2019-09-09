@@ -8,7 +8,7 @@ SECTILE_COMMAND = r"""
     ^
 
     # grab what comes before the sectile command
-    (?P<before> .* )
+    (?P<before> .*? )
 
     # the sectile command, grab the name of the inserted file
     \[\[ \s* sectile \s+ insert \s+ (?P<insert> .*? ) \s* \]\]
@@ -29,6 +29,12 @@ class Sectile(object):
         )
         self._dimensions = self.read_dimensions_file()
         self.dimensions_list = self._dimensions['dimensions']
+
+    def generate_target(self, target, base_fragment, **kwargs):
+        base = self.get_fragment(base_fragment, target, **kwargs)
+        if not base:
+            raise FileNotFoundError
+        return self.expand(base, target, **kwargs)
 
     def get_dimensions_list(self):
         return self.dimensions_list
@@ -57,20 +63,24 @@ class Sectile(object):
 
         return list
 
-    def expand(self, string):
+    def expand(self, string, path, **kwargs):
         matches = re.search(self.matcher, string)
         expanded = string
 
+        # FIXME check for an infinite loop
         if matches is not None:
             if matches.group('insert'):
-                insert = self.get_file(matches.group('insert'))
+                insert = self.get_fragment(matches.group('insert'), path, **kwargs)
+                if not insert:
+                    insert = ''
                 expanded = (
                     matches.group('before')
                     + insert
                     + matches.group('after')
                 )
-
-        return expanded
+            return self.expand(expanded, path, **kwargs)
+        else:
+            return string
 
     def get_file(self, file):
         found_file = os.path.join(
