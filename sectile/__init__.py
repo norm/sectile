@@ -82,17 +82,6 @@ class Sectile(object):
         else:
             return string
 
-    def get_file(self, file):
-        found_file = os.path.join(
-            self.fragments_directory,
-            file
-        )
-        try:
-            with open(found_file) as ff:
-                return ff.read()
-        except FileNotFoundError:
-            return '' 
-
     def read_dimensions_file(self):
         try:
             content = toml.load(
