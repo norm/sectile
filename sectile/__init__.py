@@ -10,8 +10,14 @@ SECTILE_COMMAND = r"""
     # grab what comes before the sectile command
     (?P<before> .*? )
 
+    # inspect leading whitespace
+    ( (?P<nlbefore> \n ) [ \t]* )?
+
     # the sectile command, grab the name of the inserted file
     \[\[ \s* sectile \s+ insert \s+ (?P<insert> .*? ) \s* \]\]
+
+    # inspect trailing whitespace
+    ( [ \t]* (?P<nlafter> \n ) )?
 
     # grab what comes after the sectile command
     (?P<after> .* )
@@ -73,6 +79,18 @@ class Sectile(object):
                 insert = self.get_fragment(matches.group('insert'), path, **kwargs)
                 if not insert:
                     insert = ''
+
+                # strip trailing whitespace from the text to be inserted
+                # if the command was followed by more text
+                if matches.group('nlafter') != '\n':
+                    insert = insert.rstrip()
+
+                if matches.group('nlafter') == '\n' and not insert.endswith('\n'):
+                    insert = insert + '\n'
+
+                if matches.group('nlbefore') == '\n':
+                    insert = '\n' + insert
+
                 expanded = (
                     matches.group('before')
                     + insert

@@ -34,3 +34,17 @@ def test_expand_expands():
         sectile.expand('\n[[ sectile insert nothing ]]\n', '')
         == '\n\n'
     )
+
+def test_expand_line_alone_has_no_duplicate_newline():
+    sectile = Sectile('tests/fragments')
+    assert (
+        sectile.expand('before\n[[ sectile insert title ]]\nafter', '')
+        == 'before\n<title>default page title</title>\nafter'
+    )
+
+def test_expand_inline_has_no_newline():
+    sectile = Sectile('tests/fragments')
+    assert (
+        sectile.expand('before [[ sectile insert title ]] after', '')
+        == 'before <title>default page title</title> after'
+    )

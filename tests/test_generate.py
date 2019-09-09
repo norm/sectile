@@ -3,8 +3,6 @@ import pytest
 from sectile import Sectile
 
 
-# FIXME whitespace after includes
-
 def test_generate_file_not_found():
     sectile = Sectile('tests/fragments')
     with pytest.raises(FileNotFoundError):
@@ -20,12 +18,9 @@ def test_generate_default_target():
 <html>
 <head>
 </head>
-
 <body>
 <h1>This page type not defined</h1>
-
 </body>
-
 </html>
 """
 
@@ -41,11 +36,8 @@ def test_generate_specific_target():
 <html>
 <head>
 </head>
-
 <body>
 <h1>An English blog page</h1>
-
 </body>
-
 </html>
 """
