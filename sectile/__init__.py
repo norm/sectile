@@ -1,3 +1,4 @@
+import itertools
 import os
 import re
 import toml
@@ -94,3 +95,50 @@ class Sectile(object):
             content["dimensions"] = []
 
         return content
+
+    def get_fragment(self, fragment, path, **kwargs):
+        for path in self.get_fragment_paths(fragment, path, **kwargs):
+            target = os.path.join(self.fragments_directory, path)
+            if os.path.exists(target):
+                with open(target) as file:
+                    return file.read()
+        return None
+
+    def get_fragment_paths(self, fragment, path, **kwargs):
+        paths = self.split_path(path)
+
+        dimension_possibilities = []
+        for dimension in self.get_dimensions_list():
+            if dimension in kwargs:
+                dimension_possibilities.append(
+                    self.get_dimension_inheritance(dimension, kwargs[dimension])
+                )
+            else:
+                dimension_possibilities.append(['all'])
+
+        dimension_paths = []
+        if len(dimension_possibilities):
+            for combo in itertools.product(*dimension_possibilities):
+                # ignore when all dimensions are "all" (the generic case)
+                if combo.count('all') != len(combo):
+                    dimension_paths.append(os.path.join(*combo))
+
+        fragment_paths = []
+        for path in paths:
+            for dimension_path in dimension_paths:
+                fragment_paths.append(os.path.join(dimension_path, path, fragment))
+        for path in paths:
+            fragment_paths.append(os.path.join('default', path, fragment))
+
+        return fragment_paths
+
+    def split_path(self, path):
+        if path.find('/') >= 0:
+            path = os.path.normpath(path).lstrip('/')
+        paths = []
+        paths.append(path)
+        (head, tail) = os.path.split(path)
+        while tail:
+            paths.append(head)
+            (head, tail) = os.path.split(head)
+        return paths
