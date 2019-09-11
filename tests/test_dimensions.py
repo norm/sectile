@@ -81,3 +81,22 @@ def test_dimension_inheritance_doesnt_require_entry_in_config():
         sectile.get_dimension_inheritance('region', 'latvia')
         == ['latvia', 'all']
     )
+
+def test_reserved_dimensions_cause_error():
+    with pytest.raises(KeyError):
+        sectile = Sectile(
+            'tests/empty_fragments',
+            {
+                'dimension': { 'true': 'false' },
+                'intl': { 'en-GB': 'en' },
+            }
+        )
+
+def test_reserved_dimension_instances_cause_error():
+    with pytest.raises(KeyError):
+        sectile = Sectile(
+            'tests/empty_fragments',
+            {
+                'product': { 'toaster': 'generic', 'generic': 'all' },
+            }
+        )

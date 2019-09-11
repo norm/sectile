@@ -4,6 +4,8 @@ import re
 import toml
 
 
+RESERVED_DIMENSIONS = ('dimension', 'dimensions', 'intl', 'sectile')
+RESERVED_DIMENSION_INSTANCES = ('generic', 'default', 'all')
 SECTILE_COMMAND = r"""
     ^
 
@@ -157,4 +159,16 @@ class Sectile(object):
                 )
             except FileNotFoundError:
                 dimensions = {}
+        for dimension in RESERVED_DIMENSIONS:
+            if dimension in dimensions:
+                raise KeyError(
+                    '"%s" is a reserved dimension name' % dimension
+                )
+        for dimension in dimensions:
+            for instance in dimensions[dimension]:
+                if instance in RESERVED_DIMENSION_INSTANCES:
+                    raise KeyError(
+                        '"%s" is a reserved dimension instance name'
+                        % dimension
+                    )
         return dimensions
