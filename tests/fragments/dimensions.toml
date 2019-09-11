@@ -1,11 +1,5 @@
 # File format: TOML [insert URL]
 
-dimensions = [
-    'region',
-    'language',
-    'environment',
-]
-
 # three things to note:
 #   1.  'all' never has to be declared, it is provided for you
 #   2.  ordering of {instances} within a dimension is not important
@@ -15,6 +9,11 @@ dimensions = [
 [region]
 uk      = "europe"
 england = "uk"
+
+# a dimension can be declared without any inheritance details;
+# this just means all product instances only inherit from 'all'
+[product]
+
 
 [environment]
 qa      = "staging"

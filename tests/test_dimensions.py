@@ -4,17 +4,49 @@ import toml
 from sectile import Sectile
 
 
+def test_dimensions_at_instantiation():
+    sectile = Sectile(
+        'tests/empty_fragments',
+        {
+            'region': {'england': 'uk'},
+            'environment': {'staging': 'production'}
+        }
+    )
+    assert sectile.get_dimensions_list() == [
+        'region',
+        'environment',
+    ]
+    assert sectile.get_dimension('region') == {'england': 'uk'}
+    assert sectile.get_dimension('environment') == {'staging': 'production'}
+
+
 def test_read_dimensions_file():
     sectile = Sectile('tests/fragments')
     assert sectile.get_dimensions_list() == [
         'region',
-        'language',
+        'product',
         'environment',
     ]
 
     assert sectile.get_dimension('region') == {'england': 'uk', 'uk': 'europe'}
-    assert sectile.get_dimension('language') == {}
+    assert sectile.get_dimension('product') == {}
     assert sectile.get_dimension('environment') == {'qa': 'staging', 'staging': 'production'}
+
+
+def test_dimensions_at_instantiation_overrides_toml():
+    sectile = Sectile(
+        'tests/fragments',
+        {
+            'region': {'england': 'uk'},
+            'environment': {'staging': 'production'}
+        }
+    )
+    assert sectile.get_dimensions_list() == [
+        'region',
+        'environment',
+    ]
+    assert sectile.get_dimension('region') == {'england': 'uk'}
+    assert sectile.get_dimension('environment') == {'staging': 'production'}
 
 
 def test_read_broken_dimensions_file():

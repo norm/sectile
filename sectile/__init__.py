@@ -27,14 +27,16 @@ SECTILE_COMMAND = r"""
 
 
 class Sectile(object):
-    def __init__(self, directory):
+    def __init__(self, directory, dimensions=[]):
         self.fragments_directory = directory
         self.matcher = re.compile(
             SECTILE_COMMAND,
             re.MULTILINE|re.DOTALL|re.VERBOSE
         )
-        self._dimensions = self.read_dimensions_file()
-        self.dimensions_list = self._dimensions['dimensions']
+        self._dimensions = self.build_dimensions(dimensions)
+        self.dimensions_list = []
+        for key in self._dimensions:
+            self.dimensions_list.append(key)
 
     def generate_target(self, target, base_fragment, **kwargs):
         base = self.get_fragment(base_fragment, target, **kwargs)
@@ -100,19 +102,6 @@ class Sectile(object):
         else:
             return string
 
-    def read_dimensions_file(self):
-        try:
-            content = toml.load(
-                os.path.join(self.fragments_directory, 'dimensions.toml')
-            )
-        except FileNotFoundError:
-            content = {}
-
-        if not 'dimensions' in content:
-            content["dimensions"] = []
-
-        return content
-
     def get_fragment(self, fragment, path, **kwargs):
         for path in self.get_fragment_paths(fragment, path, **kwargs):
             target = os.path.join(self.fragments_directory, path)
@@ -159,3 +148,13 @@ class Sectile(object):
             paths.append(head)
             (head, tail) = os.path.split(head)
         return paths
+
+    def build_dimensions(self, dimensions):
+        if not dimensions:
+            try:
+                dimensions = toml.load(
+                    os.path.join(self.fragments_directory, 'dimensions.toml')
+                )
+            except FileNotFoundError:
+                dimensions = {}
+        return dimensions
