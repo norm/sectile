@@ -41,10 +41,19 @@ class Sectile(object):
             self.dimensions_list.append(key)
 
     def generate_target(self, target, base_fragment, **kwargs):
-        base = self.get_fragment(base_fragment, target, **kwargs)
+        base = self.get_matching_fragment(base_fragment, target, **kwargs)
         if not base:
             raise FileNotFoundError
-        return self.expand(base, target, **kwargs)
+
+        (content, fragments) = self.expand(
+            self.get_fragment_file(base),
+            target,
+            1,
+            **kwargs,
+        )
+
+        fragments = [{base_fragment: base, 'depth': 0}] + fragments
+        return content, fragments
 
     def get_dimensions_list(self):
         return self.dimensions_list
@@ -72,44 +81,52 @@ class Sectile(object):
         list.append('all')
 
         return list
-
-    def expand(self, string, path, **kwargs):
-        matches = re.search(self.matcher, string)
+ 
+    def expand(self, string, path, depth=1, **kwargs):
         expanded = string
+        fragments = []
 
         # FIXME check for an infinite loop
-        if matches is not None:
-            if matches.group('insert'):
-                insert = self.get_fragment(matches.group('insert'), path, **kwargs)
-                if not insert:
-                    insert = ''
+        matches = re.search(self.matcher, string)
+        while matches is not None:
+            insert = matches.group('insert')
+            fragment = self.get_matching_fragment(insert, path, **kwargs)
+            if fragment:
+                fragments.append({insert: fragment, 'depth': depth})
+                replacement = self.get_fragment_file(fragment)
+                (insertion, matched) = self.expand(
+                    replacement, path, depth+1, **kwargs)
+                if matched:
+                    fragments += matched
+            else:
+                fragments.append({insert: None, 'depth': depth})
+                insertion = ''
 
-                # strip trailing whitespace from the text to be inserted
-                # if the command was followed by more text
-                if matches.group('nlafter') != '\n':
-                    insert = insert.rstrip()
+            # strip trailing whitespace from the insertion
+            # if the command was followed by more text
+            if matches.group('nlafter') != '\n':
+                insertion = insertion.rstrip()
 
-                if matches.group('nlafter') == '\n' and not insert.endswith('\n'):
-                    insert = insert + '\n'
+            if matches.group('nlafter') == '\n' and not insertion.endswith('\n'):
+                insertion = insertion + '\n'
 
-                if matches.group('nlbefore') == '\n':
-                    insert = '\n' + insert
+            if matches.group('nlbefore') == '\n':
+                insertion = '\n' + insertion
 
-                expanded = (
-                    matches.group('before')
-                    + insert
-                    + matches.group('after')
-                )
-            return self.expand(expanded, path, **kwargs)
-        else:
-            return string
+            string = (
+                matches.group('before')
+                + insertion
+                + matches.group('after')
+            )
+            matches = re.search(self.matcher, string)
 
-    def get_fragment(self, fragment, path, **kwargs):
+        return string, fragments
+
+    def get_matching_fragment(self, fragment, path, **kwargs):
         for path in self.get_fragment_paths(fragment, path, **kwargs):
             target = os.path.join(self.fragments_directory, path)
             if os.path.exists(target):
-                with open(target) as file:
-                    return file.read()
+                return path
         return None
 
     def get_fragment_paths(self, fragment, path, **kwargs):
@@ -150,6 +167,11 @@ class Sectile(object):
             paths.append(head)
             (head, tail) = os.path.split(head)
         return paths
+
+    def get_fragment_file(self, file):
+        path = os.path.join(self.fragments_directory, file)
+        with open(path) as handle:
+            return handle.read()
 
     def build_dimensions(self, dimensions):
         if not dimensions:

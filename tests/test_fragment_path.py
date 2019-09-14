@@ -99,29 +99,29 @@ def test_fragment_paths():
 def test_find_fragments():
     sectile = Sectile('tests/fragments')
     assert (
-        sectile.get_fragment(
+        sectile.get_matching_fragment(
             'header',
             '',
             region='england',
-        ) == 'european header\n'
+        ) == 'europe/all/all/header'
     )
     assert (
-        sectile.get_fragment(
+        sectile.get_matching_fragment(
             'header',
             '',
             region='england',
             environment='qa',
-        ) == 'UK QA header\n'
+        ) == 'uk/all/qa/header'
     )
     assert (
-        sectile.get_fragment(
+        sectile.get_matching_fragment(
             'header',
             'blog/article',
             region='england',
-        ) == 'England blog header\n'
+        ) == 'england/all/all/blog/header'
     )
     assert (
-        sectile.get_fragment(
+        sectile.get_matching_fragment(
             'blog/article/snarf',
             '',
             region='england',
