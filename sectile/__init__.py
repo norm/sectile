@@ -4,7 +4,7 @@ import re
 import toml
 
 
-RESERVED_DIMENSIONS = ('dimension', 'dimensions', 'intl', 'sectile')
+RESERVED_DIMENSIONS = ('dimension', 'dimensions', 'intl', 'sectile', 'targets')
 RESERVED_DIMENSION_INSTANCES = ('generic', 'default', 'all')
 SECTILE_COMMAND = r"""
     ^
@@ -29,8 +29,9 @@ SECTILE_COMMAND = r"""
 
 
 class Sectile(object):
-    def __init__(self, directory, dimensions=[]):
-        self.fragments_directory = directory
+    def __init__(self, fragments, destination, dimensions=[], targets=[]):
+        self.fragments_directory = fragments
+        self.destination_directory = destination
         self.matcher = re.compile(
             SECTILE_COMMAND,
             re.MULTILINE|re.DOTALL|re.VERBOSE
@@ -39,8 +40,51 @@ class Sectile(object):
         self.dimensions_list = []
         for key in self._dimensions:
             self.dimensions_list.append(key)
+        self._targets = self.build_targets(targets)
+        self.all_dimension_instances = []
+        for dimension in self.get_dimensions_list():
+            self.all_dimension_instances.append(
+                self.get_dimension_instances(dimension)
+            )
 
-    def generate_target(self, target, base_fragment, **kwargs):
+    def generate_all_targets(self):
+        dimensions = self.get_dimensions_list()
+        for combo in itertools.product(*self.all_dimension_instances):
+            args = {}
+            for i, instance in enumerate(combo):
+                args[dimensions[i]] = instance
+
+            skips = self._targets['dimensions']['ignore']
+            for target in self._targets:
+                if target == 'dimensions':
+                    continue
+
+                dimension = '/'.join(combo)
+                skip_target = False
+                for skip in skips:
+                    if dimension.startswith(skip):
+                        skip_target = True
+
+                if skip_target:
+                    continue
+
+                target_file = os.path.join(
+                    self.destination_directory,
+                    *combo, 
+                    self._targets[target]['target'],
+                )
+                (content, fragments) = self.generate(
+                    self._targets[target]['target'],
+                    self._targets[target]['base'],
+                    **args
+                )
+                _directory = os.path.dirname(target_file)
+                if not os.path.isdir(_directory):
+                    os.makedirs(_directory)
+                with open(target_file, 'w') as handle:
+                    handle.write(content)
+
+    def generate(self, target, base_fragment, **kwargs):
         base = self.get_matching_fragment(base_fragment, target, **kwargs)
         if not base:
             raise FileNotFoundError
@@ -82,6 +126,15 @@ class Sectile(object):
 
         return list
  
+    def get_dimension_instances(self, dimension):
+        instances = {}
+        dimension = self.get_dimension(dimension)
+        for key in dimension:
+            instances[key] = 1
+            instances[dimension[key]] = 1
+        instances['all'] = 1
+        return list(instances)
+
     def expand(self, string, path, depth=1, **kwargs):
         expanded = string
         fragments = []
@@ -194,3 +247,13 @@ class Sectile(object):
                         % dimension
                     )
         return dimensions
+
+    def build_targets(self, targets):
+        if not targets:
+            try:
+                targets = toml.load(
+                    os.path.join(self.fragments_directory, 'targets.toml')
+                )
+            except FileNotFoundError:
+                targets = []
+        return targets

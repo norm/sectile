@@ -1,0 +1,17 @@
+# File format: TOML [insert URL]
+
+[dimensions]
+ignore = [
+    "uk/",
+    "europe/",
+    "all/",
+]
+
+
+[homepage]
+base = "default.html"
+target = "index.html"
+
+[about]
+base = "default.html"
+target = "about.html"

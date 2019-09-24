@@ -6,12 +6,12 @@ from sectile import Sectile
 def test_generate_file_not_found():
     sectile = Sectile('tests/fragments')
     with pytest.raises(FileNotFoundError):
-        assert sectile.generate_target('what/ever', 'no_such_template')
+        assert sectile.generate('what/ever', 'no_such_template')
 
 
 def test_generate_default_target():
     sectile = Sectile('tests/fragments')
-    (content, fragments) = sectile.generate_target(
+    (content, fragments) = sectile.generate(
         'homepage',
         'default.html',
     )
@@ -36,7 +36,7 @@ def test_generate_default_target():
 
 def test_generate_specific_target():
     sectile = Sectile('tests/fragments')
-    (content, fragments) = sectile.generate_target(
+    (content, fragments) = sectile.generate(
         'blog/article/13-things-to-do-in-london',
         'default.html',
         region='england',
@@ -63,7 +63,7 @@ def test_generate_specific_target():
 
 def test_generate_with_missing_fragment():
     sectile = Sectile('tests/fragments')
-    (content, fragments) = sectile.generate_target(
+    (content, fragments) = sectile.generate(
         'blog/article/13-things-to-do-in-london',
         'default.html',
         region='england',

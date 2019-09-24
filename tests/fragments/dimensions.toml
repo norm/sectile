@@ -9,6 +9,7 @@
 [region]
 uk      = "europe"
 england = "uk"
+us      = "all"
 
 # a dimension can be declared without any inheritance details;
 # this just means all product instances only inherit from 'all'
