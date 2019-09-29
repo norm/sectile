@@ -29,7 +29,14 @@ SECTILE_COMMAND = r"""
 
 
 class Sectile(object):
-    def __init__(self, fragments, destination, dimensions=[], targets=[]):
+    def __init__(
+        self,
+        *,
+        fragments='',
+        destination=None,
+        dimensions=[],
+        targets=[]
+    ):
         self.fragments_directory = fragments
         self.destination_directory = destination
         self.matcher = re.compile(

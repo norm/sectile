@@ -2,7 +2,7 @@ from sectile import Sectile
 
 
 def test_fragment_alone():
-    sectile = Sectile('tests/empty_fragments')
+    sectile = Sectile(fragments='tests/empty_fragments')
     assert (
         sectile.get_fragment_paths('header', '')
         == [
@@ -11,7 +11,7 @@ def test_fragment_alone():
     )
 
 def test_with_path_but_no_dimensions():
-    sectile = Sectile('tests/empty_fragments')
+    sectile = Sectile(fragments='tests/empty_fragments')
     assert (
         sectile.get_fragment_paths(
             'header',
@@ -36,7 +36,7 @@ def test_with_path_but_no_dimensions():
 
 
 def test_fragment_paths():
-    sectile = Sectile('tests/fragments')
+    sectile = Sectile(fragments='tests/fragments')
     assert (
         sectile.get_fragment_paths(
             'header',
@@ -97,7 +97,7 @@ def test_fragment_paths():
 
 
 def test_find_fragments():
-    sectile = Sectile('tests/fragments')
+    sectile = Sectile(fragments='tests/fragments')
     assert (
         sectile.get_matching_fragment(
             'header',

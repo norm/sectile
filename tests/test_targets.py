@@ -65,8 +65,8 @@ class TestSectileTargetGeneration(CompareDirectories):
 
     def test_target_generation(self):
         sectile = Sectile(
-            'tests/fragments',
-            self.tempdir,
+            fragments='tests/fragments',
+            destination=self.tempdir,
         )
         sectile.generate_all_targets()
         self.compare_directories()
