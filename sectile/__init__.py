@@ -94,16 +94,21 @@ class Sectile(object):
     def generate(self, target, base_fragment, **kwargs):
         base = self.get_matching_fragment(base_fragment, target, **kwargs)
         if not base:
-            raise FileNotFoundError
+            raise FileNotFoundError(base_fragment)
 
+        fragment_file = self.get_fragment_file(base)
         (content, fragments) = self.expand(
-            self.get_fragment_file(base),
+            fragment_file,
             target,
             1,
             **kwargs,
         )
-
-        fragments = [{base_fragment: base, 'depth': 0}] + fragments
+        fragments = [{
+                'file': base_fragment,
+                'found': base,
+                'fragment': fragment_file,
+                'depth': 0
+            }] + fragments
         return content, fragments
 
     def get_dimensions_list(self):
@@ -152,14 +157,24 @@ class Sectile(object):
             insert = matches.group('insert')
             fragment = self.get_matching_fragment(insert, path, **kwargs)
             if fragment:
-                fragments.append({insert: fragment, 'depth': depth})
                 replacement = self.get_fragment_file(fragment)
+                fragments.append({
+                        'file': insert,
+                        'found': fragment,
+                        'fragment': replacement,
+                        'depth': depth,
+                    })
                 (insertion, matched) = self.expand(
                     replacement, path, depth+1, **kwargs)
                 if matched:
                     fragments += matched
             else:
-                fragments.append({insert: None, 'depth': depth})
+                fragments.append({
+                        'file': insert,
+                        'found': None,
+                        'fragment': '',
+                        'depth': depth,
+                    })
                 insertion = ''
 
             # strip trailing whitespace from the insertion

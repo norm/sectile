@@ -26,11 +26,50 @@ def test_generate_default_target():
 </html>
 """
     assert fragments == [
-        { 'default.html': 'default/default.html', 'depth': 0 },
-        { 'head_wrapper': 'default/head_wrapper', 'depth': 1 },
-        { 'title': 'default/title', 'depth': 2 },
-        { 'body_wrapper': 'default/body_wrapper', 'depth': 1 },
-        { 'body': 'default/body', 'depth': 2 },
+        {
+            'file': 'default.html',
+            'found': 'default/default.html',
+            'fragment': (
+                '<!DOCTYPE html>\n'
+                '<html>\n'
+                '[[ sectile insert head_wrapper ]]\n'
+                '[[ sectile insert body_wrapper ]]\n'
+                '</html>\n'
+            ),
+            'depth': 0,
+        },
+        {
+            'file': 'head_wrapper',
+            'found': 'default/head_wrapper',
+            'fragment': (
+                '<head>\n'
+                '[[ sectile insert title ]]\n'
+                '</head>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'title',
+            'found': 'default/title',
+            'fragment': '<title>default page title</title>\n',
+            'depth': 2,
+        },
+        {
+            'file': 'body_wrapper',
+            'found': 'default/body_wrapper',
+            'fragment': (
+                '<body>\n'
+                '[[ sectile insert body ]]\n'
+                '</body>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'body',
+            'found': 'default/body',
+            'fragment': '<h1>This page type not defined</h1>\n',
+            'depth': 2,
+        },
     ]
 
 
@@ -54,11 +93,50 @@ def test_generate_specific_target():
 </html>
 """
     assert fragments == [
-        { 'default.html': 'default/default.html', 'depth': 0 },
-        { 'head_wrapper': 'default/head_wrapper', 'depth': 1 },
-        { 'title': 'europe/all/all/title', 'depth': 2 },
-        { 'body_wrapper': 'default/body_wrapper', 'depth': 1 },
-        { 'body': 'england/all/all/blog/body', 'depth': 2 },
+        {
+            'file': 'default.html',
+            'found': 'default/default.html',
+            'fragment': (
+                '<!DOCTYPE html>\n'
+                '<html>\n'
+                '[[ sectile insert head_wrapper ]]\n'
+                '[[ sectile insert body_wrapper ]]\n'
+                '</html>\n'
+            ),
+            'depth': 0,
+        },
+        {
+            'file': 'head_wrapper',
+            'found': 'default/head_wrapper',
+            'fragment': (
+                '<head>\n'
+                '[[ sectile insert title ]]\n'
+                '</head>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'title',
+            'found': 'europe/all/all/title',
+            'fragment': '<title>European title</title>',
+            'depth': 2,
+        },
+        {
+            'file': 'body_wrapper',
+            'found': 'default/body_wrapper',
+            'fragment': (
+                '<body>\n'
+                '[[ sectile insert body ]]\n'
+                '</body>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'body',
+            'found': 'england/all/all/blog/body',
+            'fragment': '<h1>An English blog page</h1>\n',
+            'depth': 2,
+        },
     ]
 
 def test_generate_with_missing_fragment():
@@ -82,10 +160,55 @@ def test_generate_with_missing_fragment():
 </html>
 """
     assert fragments == [
-        { 'default.html': 'default/default.html', 'depth': 0 },
-        { 'head_wrapper': 'england/all/qa/head_wrapper', 'depth': 1 },
-        { 'qa_css': None, 'depth': 2 },
-        { 'title': 'europe/all/all/title', 'depth': 2 },
-        { 'body_wrapper': 'default/body_wrapper', 'depth': 1 },
-        { 'body': 'england/all/all/blog/body', 'depth': 2 },
+        {
+            'file': 'default.html',
+            'found': 'default/default.html',
+            'fragment': (
+                '<!DOCTYPE html>\n'
+                '<html>\n'
+                '[[ sectile insert head_wrapper ]]\n'
+                '[[ sectile insert body_wrapper ]]\n'
+                '</html>\n'
+            ),
+            'depth': 0,
+        },
+        {
+            'file': 'head_wrapper',
+            'found': 'england/all/qa/head_wrapper',
+            'fragment': (
+                '<head>\n'
+                '[[ sectile insert qa_css ]]\n'
+                '[[ sectile insert title ]]\n'
+                '</head>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'qa_css',
+            'found': None,
+            'fragment': '',
+            'depth': 2,
+        },
+        {
+            'file': 'title',
+            'found': 'europe/all/all/title',
+            'fragment': '<title>European title</title>',
+            'depth': 2,
+        },
+        {
+            'file': 'body_wrapper',
+            'found': 'default/body_wrapper',
+            'fragment': (
+                '<body>\n'
+                '[[ sectile insert body ]]\n'
+                '</body>\n'
+            ),
+            'depth': 1,
+        },
+        {
+            'file': 'body',
+            'found': 'england/all/all/blog/body',
+            'fragment': '<h1>An English blog page</h1>\n',
+            'depth': 2,
+        },
     ]
