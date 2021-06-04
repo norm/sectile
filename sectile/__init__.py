@@ -4,8 +4,18 @@ import re
 import toml
 
 
-RESERVED_DIMENSIONS = ('dimension', 'dimensions', 'intl', 'sectile', 'targets')
-RESERVED_DIMENSION_INSTANCES = ('generic', 'default', 'all')
+RESERVED_DIMENSIONS = (
+    'dimension',
+    'dimensions',
+    'intl',
+    'sectile',
+    'targets',
+)
+RESERVED_DIMENSION_INSTANCES = (
+    'generic',
+    'default',
+    'all',
+)
 SECTILE_COMMAND = r"""
     ^
 
