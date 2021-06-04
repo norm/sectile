@@ -10,6 +10,8 @@ RESERVED_DIMENSIONS = (
     'intl',
     'sectile',
     'targets',
+    'paths',
+    'path'
 )
 RESERVED_DIMENSION_INSTANCES = (
     'generic',
@@ -45,7 +47,7 @@ class Sectile(object):
         fragments='',
         destination=None,
         dimensions=[],
-        targets=[]
+        targets=[],
     ):
         self.fragments_directory = fragments
         self.destination_directory = destination
@@ -214,33 +216,46 @@ class Sectile(object):
                 return path
         return None
 
-    def get_fragment_paths(self, fragment, path, **kwargs):
-        paths = self.split_path(path)
-
+    def get_dimension_possibilities(self, fragment, path, **kwargs):
         dimension_possibilities = []
         for dimension in self.get_dimensions_list():
+            possibilities = {'name': dimension}
             if dimension in kwargs:
-                dimension_possibilities.append(
-                    self.get_dimension_inheritance(dimension, kwargs[dimension])
-                )
+                possibilities['options'] \
+                    = self.get_dimension_inheritance(
+                        dimension, kwargs[dimension])
             else:
-                dimension_possibilities.append(['all'])
+                possibilities['options'] = ['all']
+            dimension_possibilities.append(possibilities)
+        paths = {'name': 'path', 'options': []}
+        for subdir in self.split_path(path):
+            paths['options'].append(os.path.join(subdir, fragment))
+        dimension_possibilities.append(paths)
 
-        dimension_paths = []
-        if len(dimension_possibilities):
-            for combo in itertools.product(*dimension_possibilities):
-                # ignore when all dimensions are "all" (the generic case)
-                if combo.count('all') != len(combo):
-                    dimension_paths.append(os.path.join(*combo))
+        return dimension_possibilities
 
-        fragment_paths = []
-        for path in paths:
-            for dimension_path in dimension_paths:
-                fragment_paths.append(os.path.join(dimension_path, path, fragment))
-        for path in paths:
-            fragment_paths.append(os.path.join('default', path, fragment))
+    def get_fragment_paths(self, fragment, path, **kwargs):
+        possibilities \
+            = self.get_dimension_possibilities(fragment, path, **kwargs)
 
-        return fragment_paths
+        # move the path (last possibility returned) to the start
+        # so that it sorts correctly when coming out of itertools.product
+        possibilities.insert(0, possibilities.pop())
+
+        paths = []
+        options = [ poss['options'] for poss in possibilities ]
+        for combo in itertools.product(*options):
+            # if all non-path dimensions are "all", that is equivalent
+            # to "default" so skip the combo
+            if combo[1:].count('all') != len(combo[1:]):
+                # put the path back on the end, reversing what we did
+                # above so that it would compute the product correctly
+                paths.append(os.path.join(*combo[1:], combo[0]))
+
+        # 'default' ("all/all/all...") special cases
+        for path in options[0]:
+            paths.append(os.path.join('default', path))
+        return paths
 
     def split_path(self, path):
         if path.find('/') >= 0:

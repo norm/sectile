@@ -107,3 +107,47 @@ def test_reserved_dimension_instances_cause_error():
                 'product': { 'toaster': 'generic', 'generic': 'all' },
             }
         )
+
+def test_dimension_possibilities():
+    sectile = Sectile(fragments='tests/fragments')
+    assert (
+        sectile.get_dimension_possibilities(
+            'header',
+            'blog/article',
+            region='england',
+            environment='qa',
+        ) == [
+            {
+                'name': 'region',
+                'options': [
+                    'england',
+                    'uk',
+                    'europe',
+                    'all',
+                ]
+            },
+            {
+                'name': 'product',
+                'options': [
+                    'all',
+                ]
+            },
+            {
+                'name': 'environment',
+                'options': [
+                    'qa',
+                    'staging',
+                    'production',
+                    'all',
+                ]
+            },
+            {
+                'name': 'path',
+                'options': [
+                    'blog/article/header',
+                    'blog/header',
+                    'header',
+                ]
+            },
+        ]
+    )
