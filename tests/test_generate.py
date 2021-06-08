@@ -27,6 +27,12 @@ def test_generate_default_target():
 """
     assert fragments == [
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'default.html',
+            },
             'file': 'default.html',
             'found': 'default/default.html',
             'fragment': (
@@ -39,6 +45,12 @@ def test_generate_default_target():
             'depth': 0,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'head_wrapper',
+            },
             'file': 'head_wrapper',
             'found': 'default/head_wrapper',
             'fragment': (
@@ -49,12 +61,24 @@ def test_generate_default_target():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'title',
+            },
             'file': 'title',
             'found': 'default/title',
             'fragment': '<title>default page title</title>\n',
             'depth': 2,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'body_wrapper',
+            },
             'file': 'body_wrapper',
             'found': 'default/body_wrapper',
             'fragment': (
@@ -65,6 +89,12 @@ def test_generate_default_target():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'body',
+            },
             'file': 'body',
             'found': 'default/body',
             'fragment': '<h1>This page type not defined</h1>\n',
@@ -94,6 +124,12 @@ def test_generate_specific_target():
 """
     assert fragments == [
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'default.html',
+            },
             'file': 'default.html',
             'found': 'default/default.html',
             'fragment': (
@@ -106,6 +142,12 @@ def test_generate_specific_target():
             'depth': 0,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'head_wrapper',
+            },
             'file': 'head_wrapper',
             'found': 'default/head_wrapper',
             'fragment': (
@@ -116,12 +158,24 @@ def test_generate_specific_target():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'europe',
+                'path': 'title',
+            },
             'file': 'title',
             'found': 'europe/all/all/title',
             'fragment': '<title>European title</title>',
             'depth': 2,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'body_wrapper',
+            },
             'file': 'body_wrapper',
             'found': 'default/body_wrapper',
             'fragment': (
@@ -132,6 +186,12 @@ def test_generate_specific_target():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'england',
+                'path': 'blog/body',
+            },
             'file': 'body',
             'found': 'england/all/all/blog/body',
             'fragment': '<h1>An English blog page</h1>\n',
@@ -161,6 +221,12 @@ def test_generate_with_missing_fragment():
 """
     assert fragments == [
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'default.html',
+            },
             'file': 'default.html',
             'found': 'default/default.html',
             'fragment': (
@@ -173,6 +239,12 @@ def test_generate_with_missing_fragment():
             'depth': 0,
         },
         {
+            'dimensions': {
+                'environment': 'qa',
+                'product': 'all',
+                'region': 'england',
+                'path': 'head_wrapper',
+            },
             'file': 'head_wrapper',
             'found': 'england/all/qa/head_wrapper',
             'fragment': (
@@ -184,18 +256,36 @@ def test_generate_with_missing_fragment():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': None,
+                'product': None,
+                'region': None,
+                'path': None,
+            },
             'file': 'qa_css',
             'found': None,
             'fragment': '',
             'depth': 2,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'europe',
+                'path': 'title',
+            },
             'file': 'title',
             'found': 'europe/all/all/title',
             'fragment': '<title>European title</title>',
             'depth': 2,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'all',
+                'path': 'body_wrapper',
+            },
             'file': 'body_wrapper',
             'found': 'default/body_wrapper',
             'fragment': (
@@ -206,6 +296,12 @@ def test_generate_with_missing_fragment():
             'depth': 1,
         },
         {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'england',
+                'path': 'blog/body',
+            },
             'file': 'body',
             'found': 'england/all/all/blog/body',
             'fragment': '<h1>An English blog page</h1>\n',

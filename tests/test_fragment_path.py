@@ -103,7 +103,15 @@ def test_find_fragments():
             'header',
             '',
             region='england',
-        ) == 'europe/all/all/header'
+        ) == {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'europe',
+                'path': 'header',
+            },
+            'found': 'europe/all/all/header',
+        }
     )
     assert (
         sectile.get_matching_fragment(
@@ -111,19 +119,43 @@ def test_find_fragments():
             '',
             region='england',
             environment='qa',
-        ) == 'uk/all/qa/header'
+        ) == {
+            'dimensions': {
+                'environment': 'qa',
+                'product': 'all',
+                'region': 'uk',
+                'path': 'header',
+            },
+            'found': 'uk/all/qa/header',
+        }
     )
     assert (
         sectile.get_matching_fragment(
             'header',
             'blog/article',
             region='england',
-        ) == 'england/all/all/blog/header'
+        ) == {
+            'dimensions': {
+                'environment': 'all',
+                'product': 'all',
+                'region': 'england',
+                'path': 'blog/header',
+            },
+            'found': 'england/all/all/blog/header',
+        }
     )
     assert (
         sectile.get_matching_fragment(
             'blog/article/snarf',
             '',
             region='england',
-        ) == None
+        ) == {
+            'dimensions': {
+                'environment': None,
+                'product': None,
+                'region': None,
+                'path': None,
+            },
+            'found': None,
+        }
     )

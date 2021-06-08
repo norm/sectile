@@ -1,5 +1,6 @@
 import itertools
 import os
+from pathlib import Path
 import re
 import toml
 
@@ -104,11 +105,11 @@ class Sectile(object):
                     handle.write(content)
 
     def generate(self, target, base_fragment, **kwargs):
-        base = self.get_matching_fragment(base_fragment, target, **kwargs)
-        if not base:
+        match = self.get_matching_fragment(base_fragment, target, **kwargs)
+        if not match['found']:
             raise FileNotFoundError(base_fragment)
 
-        fragment_file = self.get_fragment_file(base)
+        fragment_file = self.get_fragment_file(match['found'])
         (content, fragments) = self.expand(
             fragment_file,
             target,
@@ -116,8 +117,9 @@ class Sectile(object):
             **kwargs,
         )
         fragments = [{
+                'dimensions': match['dimensions'],
                 'file': base_fragment,
-                'found': base,
+                'found': match['found'],
                 'fragment': fragment_file,
                 'depth': 0
             }] + fragments
@@ -167,12 +169,13 @@ class Sectile(object):
         matches = re.search(self.matcher, string)
         while matches is not None:
             insert = matches.group('insert')
-            fragment = self.get_matching_fragment(insert, path, **kwargs)
-            if fragment:
-                replacement = self.get_fragment_file(fragment)
+            match = self.get_matching_fragment(insert, path, **kwargs)
+            if match['found']:
+                replacement = self.get_fragment_file(match['found'])
                 fragments.append({
+                        'dimensions': match['dimensions'],
                         'file': insert,
-                        'found': fragment,
+                        'found': match['found'],
                         'fragment': replacement,
                         'depth': depth,
                     })
@@ -182,6 +185,7 @@ class Sectile(object):
                     fragments += matched
             else:
                 fragments.append({
+                        'dimensions': match['dimensions'],
                         'file': insert,
                         'found': None,
                         'fragment': '',
@@ -210,11 +214,32 @@ class Sectile(object):
         return string, fragments
 
     def get_matching_fragment(self, fragment, path, **kwargs):
+        match = {
+            'found': None,
+            'dimensions': {},
+        }
+        dimensions = self.get_dimensions_list()
         for path in self.get_fragment_paths(fragment, path, **kwargs):
             target = os.path.join(self.fragments_directory, path)
             if os.path.exists(target):
-                return path
-        return None
+                match['found'] = path
+                ppath = Path(path)
+                if ppath.parts[0] == 'default':
+                    match['dimensions']['path'] = os.path.join(*ppath.parts[1:])
+                    for dimension in dimensions:
+                        match['dimensions'][dimension] = 'all'
+                else:
+                    for dimension in dimensions:
+                        match['dimensions'][dimension] = ppath.parts[0]
+                        ppath = Path(os.path.join(*ppath.parts[1:]))    # FIXME
+                    match['dimensions']['path'] = os.path.join(*ppath.parts)
+                return match
+
+        # no match
+        for dimension in dimensions:
+            match['dimensions'][dimension] = None
+        match['dimensions']['path'] = None
+        return match
 
     def get_dimension_possibilities(self, fragment, path, **kwargs):
         dimension_possibilities = []

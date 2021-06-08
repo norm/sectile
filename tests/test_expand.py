@@ -30,6 +30,12 @@ def test_expand_expands():
         == (
             '\nFOUND SOMETHING\n',
             [{
+                'dimensions': {
+                    'region': 'all',
+                    'product': 'all',
+                    'environment': 'all',
+                    'path': 'something',
+                },
                 'file': 'something',
                 'found': 'default/something',
                 'fragment': 'FOUND SOMETHING',
@@ -43,6 +49,12 @@ def test_expand_expands():
         == (
             '\n\n',
             [{
+                'dimensions': {
+                    'environment': None,
+                    'product': None,
+                    'region': None,
+                    'path': None,
+                },
                 'file': 'nothing',
                 'found': None,
                 'fragment': '',
@@ -58,6 +70,12 @@ def test_expand_line_alone_has_no_duplicate_newline():
         == (
             'before\n<title>default page title</title>\nafter',
             [{
+                'dimensions': {
+                    'region': 'all',
+                    'product': 'all',
+                    'environment': 'all',
+                    'path': 'title',
+                },
                 'file': 'title',
                 'found': 'default/title',
                 'fragment': '<title>default page title</title>\n',
@@ -73,6 +91,12 @@ def test_expand_inline_has_no_newline():
         == (
             'before <title>default page title</title> after',
             [{
+                'dimensions': {
+                    'region': 'all',
+                    'product': 'all',
+                    'environment': 'all',
+                    'path': 'title',
+                },
                 'file': 'title',
                 'found': 'default/title',
                 'fragment': '<title>default page title</title>\n',
