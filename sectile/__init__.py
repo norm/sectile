@@ -252,10 +252,10 @@ class Sectile(object):
             else:
                 possibilities['options'] = ['all']
             dimension_possibilities.append(possibilities)
-        paths = {'name': 'path', 'options': []}
-        for subdir in self.split_path(path):
-            paths['options'].append(os.path.join(subdir, fragment))
-        dimension_possibilities.append(paths)
+        dimension_possibilities.append({
+                'name': 'path',
+                'options': self.split_path(path)
+            })
 
         return dimension_possibilities
 
@@ -263,9 +263,15 @@ class Sectile(object):
         possibilities \
             = self.get_dimension_possibilities(fragment, path, **kwargs)
 
-        # move the path (last possibility returned) to the start
-        # so that it sorts correctly when coming out of itertools.product
-        possibilities.insert(0, possibilities.pop())
+        # append the fragment to each path, and move them to the start
+        # of the possibilities, so that everything sorts correctly
+        # when coming out of itertools.product
+        path_poss = possibilities.pop()
+        path_poss['options'] = [
+            os.path.join(x, fragment)
+                for x in path_poss['options']
+        ]
+        possibilities.insert(0, path_poss)
 
         paths = []
         options = [ poss['options'] for poss in possibilities ]

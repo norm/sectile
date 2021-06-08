@@ -144,9 +144,9 @@ def test_dimension_possibilities():
             {
                 'name': 'path',
                 'options': [
-                    'blog/article/header',
-                    'blog/header',
-                    'header',
+                    'blog/article',
+                    'blog',
+                    '',
                 ]
             },
         ]
