@@ -1,11 +1,24 @@
 import itertools
 import os
+from pathlib import Path
 import re
 import toml
 
 
-RESERVED_DIMENSIONS = ('dimension', 'dimensions', 'intl', 'sectile', 'targets')
-RESERVED_DIMENSION_INSTANCES = ('generic', 'default', 'all')
+RESERVED_DIMENSIONS = (
+    'dimension',
+    'dimensions',
+    'intl',
+    'sectile',
+    'targets',
+    'paths',
+    'path'
+)
+RESERVED_DIMENSION_INSTANCES = (
+    'generic',
+    'default',
+    'all',
+)
 SECTILE_COMMAND = r"""
     ^
 
@@ -35,7 +48,7 @@ class Sectile(object):
         fragments='',
         destination=None,
         dimensions=[],
-        targets=[]
+        targets=[],
     ):
         self.fragments_directory = fragments
         self.destination_directory = destination
@@ -92,18 +105,24 @@ class Sectile(object):
                     handle.write(content)
 
     def generate(self, target, base_fragment, **kwargs):
-        base = self.get_matching_fragment(base_fragment, target, **kwargs)
-        if not base:
-            raise FileNotFoundError
+        match = self.get_matching_fragment(base_fragment, target, **kwargs)
+        if not match['found']:
+            raise FileNotFoundError(base_fragment)
 
+        fragment_file = self.get_fragment_file(match['found'])
         (content, fragments) = self.expand(
-            self.get_fragment_file(base),
+            fragment_file,
             target,
             1,
             **kwargs,
         )
-
-        fragments = [{base_fragment: base, 'depth': 0}] + fragments
+        fragments = [{
+                'dimensions': match['dimensions'],
+                'file': base_fragment,
+                'found': match['found'],
+                'fragment': fragment_file,
+                'depth': 0
+            }] + fragments
         return content, fragments
 
     def get_dimensions_list(self):
@@ -150,16 +169,28 @@ class Sectile(object):
         matches = re.search(self.matcher, string)
         while matches is not None:
             insert = matches.group('insert')
-            fragment = self.get_matching_fragment(insert, path, **kwargs)
-            if fragment:
-                fragments.append({insert: fragment, 'depth': depth})
-                replacement = self.get_fragment_file(fragment)
+            match = self.get_matching_fragment(insert, path, **kwargs)
+            if match['found']:
+                replacement = self.get_fragment_file(match['found'])
+                fragments.append({
+                        'dimensions': match['dimensions'],
+                        'file': insert,
+                        'found': match['found'],
+                        'fragment': replacement,
+                        'depth': depth,
+                    })
                 (insertion, matched) = self.expand(
                     replacement, path, depth+1, **kwargs)
                 if matched:
                     fragments += matched
             else:
-                fragments.append({insert: None, 'depth': depth})
+                fragments.append({
+                        'dimensions': match['dimensions'],
+                        'file': insert,
+                        'found': None,
+                        'fragment': '',
+                        'depth': depth,
+                    })
                 insertion = ''
 
             # strip trailing whitespace from the insertion
@@ -183,39 +214,73 @@ class Sectile(object):
         return string, fragments
 
     def get_matching_fragment(self, fragment, path, **kwargs):
+        match = {
+            'found': None,
+            'dimensions': {},
+        }
+        dimensions = self.get_dimensions_list()
         for path in self.get_fragment_paths(fragment, path, **kwargs):
             target = os.path.join(self.fragments_directory, path)
             if os.path.exists(target):
-                return path
-        return None
+                match['found'] = path
+                ppath = Path(path)
+                if ppath.parts[0] == 'default':
+                    match['dimensions']['path'] = os.path.join(*ppath.parts[1:])
+                    for dimension in dimensions:
+                        match['dimensions'][dimension] = 'all'
+                else:
+                    for dimension in dimensions:
+                        match['dimensions'][dimension] = ppath.parts[0]
+                        ppath = Path(os.path.join(*ppath.parts[1:]))    # FIXME
+                    match['dimensions']['path'] = os.path.join(*ppath.parts)
+                return match
 
-    def get_fragment_paths(self, fragment, path, **kwargs):
-        paths = self.split_path(path)
+        # no match
+        for dimension in dimensions:
+            match['dimensions'][dimension] = None
+        match['dimensions']['path'] = None
+        return match
 
+    def get_dimension_possibilities(self, fragment, path, **kwargs):
         dimension_possibilities = []
         for dimension in self.get_dimensions_list():
+            possibilities = {'name': dimension}
             if dimension in kwargs:
-                dimension_possibilities.append(
-                    self.get_dimension_inheritance(dimension, kwargs[dimension])
-                )
+                possibilities['options'] \
+                    = self.get_dimension_inheritance(
+                        dimension, kwargs[dimension])
             else:
-                dimension_possibilities.append(['all'])
+                possibilities['options'] = ['all']
+            dimension_possibilities.append(possibilities)
+        paths = {'name': 'path', 'options': []}
+        for subdir in self.split_path(path):
+            paths['options'].append(os.path.join(subdir, fragment))
+        dimension_possibilities.append(paths)
 
-        dimension_paths = []
-        if len(dimension_possibilities):
-            for combo in itertools.product(*dimension_possibilities):
-                # ignore when all dimensions are "all" (the generic case)
-                if combo.count('all') != len(combo):
-                    dimension_paths.append(os.path.join(*combo))
+        return dimension_possibilities
 
-        fragment_paths = []
-        for path in paths:
-            for dimension_path in dimension_paths:
-                fragment_paths.append(os.path.join(dimension_path, path, fragment))
-        for path in paths:
-            fragment_paths.append(os.path.join('default', path, fragment))
+    def get_fragment_paths(self, fragment, path, **kwargs):
+        possibilities \
+            = self.get_dimension_possibilities(fragment, path, **kwargs)
 
-        return fragment_paths
+        # move the path (last possibility returned) to the start
+        # so that it sorts correctly when coming out of itertools.product
+        possibilities.insert(0, possibilities.pop())
+
+        paths = []
+        options = [ poss['options'] for poss in possibilities ]
+        for combo in itertools.product(*options):
+            # if all non-path dimensions are "all", that is equivalent
+            # to "default" so skip the combo
+            if combo[1:].count('all') != len(combo[1:]):
+                # put the path back on the end, reversing what we did
+                # above so that it would compute the product correctly
+                paths.append(os.path.join(*combo[1:], combo[0]))
+
+        # 'default' ("all/all/all...") special cases
+        for path in options[0]:
+            paths.append(os.path.join('default', path))
+        return paths
 
     def split_path(self, path):
         if path.find('/') >= 0:
