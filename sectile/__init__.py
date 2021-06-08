@@ -304,6 +304,55 @@ class Sectile(object):
         with open(path) as handle:
             return handle.read()
 
+    def create_fragment(self, fragment, path, **kwargs):
+        paths = []
+        for dimension in self.get_dimensions_list():
+            if dimension in kwargs:
+                paths.append(kwargs[dimension])
+            else:
+                paths.append('all')
+        # special case, if every dimension is 'all' then we use 'default'
+        # ie. all/all/all/thing == default/thing
+        if paths.count('all') == len(paths):
+            paths=['default']
+        paths.append(path)
+
+        target_fragment = os.path.join(*paths, fragment)
+
+        # find the less specific option, and copy it
+        match = self.get_matching_fragment(fragment, path, **kwargs)
+        if match['found']:
+            if match['found'] == target_fragment:
+                raise FileExistsError
+            content = self.get_fragment_file(match['found'])
+        else:
+            content = ''
+
+        target_dir = os.path.join(
+            self.fragments_directory,
+            *paths,
+        )
+
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        with open(os.path.join(target_dir, fragment), 'w') as handle:
+            handle.write(content)
+
+    def update_fragment(self, fragment, content):
+        file = os.path.join(
+                self.fragments_directory,
+                fragment,
+            )
+        with open(file, 'w') as handle:
+            handle.write(content)
+
+    def delete_fragment(self, fragment):
+        file = os.path.join(
+                self.fragments_directory,
+                fragment,
+            )
+        os.remove(file)
+
     def build_dimensions(self, dimensions):
         if not dimensions:
             try:
